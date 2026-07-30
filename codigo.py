@@ -21,27 +21,33 @@ gamepad = vg.VX360Gamepad()
 #   ◯  -> B    ▢  -> X    ✕  -> A
 # ---------------------------------------------------------------------------
 code_map = {
-    # Movimento (setas)
+    # Movimento (analog) - ficou como estava
     "0xBF40FB04": ("analog", "frente"),
-    "0xFD02FB04": ("dpad", "frente"),
     "0xBE41FB04": ("analog", "tras"),
-    "0xFC03FB04": ("dpad", "tras"),
     "0xF807FB04": ("analog", "esquerda"),
-    "0xFE01FB04": ("dpad", "esquerda"),
     "0xF906FB04": ("analog", "direita"),
-    "0xFF00FB04": ("dpad", "direita"),
 
-    # Ações (Lies of P)
-    "0x50AFFB04": ("pulse_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER),  # R1 -> RB, clique
-    "0xA35CFB04": ("hold_trigger", "right"),                                    # R2 -> RT, segurar (ataque forte)
-    "0x54ABFB04": ("hold_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER),   # L1 -> LB, defesa (clique/segurar)
-    "0xA956FB04": ("hold_trigger", "left"),                                     # L2 -> LT, braço legionário (segurar)
+    # Setinhas dpad - agora nos botões R1/R2/L1/L2
+    "0x50AFFB04": ("dpad", "esquerda"),  # R1 -> seta esquerda
+    "0xA35CFB04": ("dpad", "direita"),   # R2 -> seta direita
+    "0x54ABFB04": ("dpad", "tras"),      # L1 -> seta baixo
+    "0xA956FB04": ("dpad", "frente"),    # L2 -> seta cima
+
+    # Ações (Lies of P) - agora nas setinhas dpad
+    "0xFD02FB04": ("hold_trigger", "left"),                                    # seta cima (dpad) -> L2
+    "0xFC03FB04": ("hold_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER),   # seta baixo (dpad) -> L1
+    "0xFE01FB04": ("pulse_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER), # seta esquerda (dpad) -> R1
+    "0xFF00FB04": ("hold_trigger", "right"),                                   # seta direita (dpad) -> R2
+
+    # Outros (não mexidos)
     "0xBB44FB04": ("pulse_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_THUMB),    # R3 -> travar câmera (clique)
     "0xA45BFB04": ("pulse_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_B),              # ◯ -> B, esquiva (clique)
     "0x4EB1FB04": ("hold_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_A),               # ✕ -> A (clique/segurar)
     "0xD728FB04": ("hold_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_X),               # ▢ -> X, uso (clique/segurar)
     "0x44BBFB04": ("hold_button", vg.XUSB_BUTTON.XUSB_GAMEPAD_Y),               # △ -> Y (clique/segurar)
     "0xF708FB04": ("macro", "lanterna"),                                        # ✕ + ← : liga/desliga lanterna
+    "0x42BDFB04": ("hold_combo", (vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
+                                  vg.XUSB_BUTTON.XUSB_GAMEPAD_Y)),              # L1 + △ segurados: arte das fábulas
 }
 
 # Direção -> botão D-pad no vgamepad
@@ -88,6 +94,9 @@ def release_held():
         gamepad.release_button(button=val)
     elif htype == "trigger":
         set_trigger(val, 0)
+    elif htype == "combo":
+        for btn in val:
+            gamepad.release_button(button=btn)
     gamepad.update()
     held = None
 
@@ -100,6 +109,8 @@ def identity_of(kind, which):
         return ("button", which)
     if kind == "hold_trigger":
         return ("trigger", which)
+    if kind == "hold_combo":
+        return ("combo", tuple(which))
     return None
 
 
@@ -119,6 +130,11 @@ def engage(kind, which):
         set_trigger(which, 255)
         gamepad.update()
         return ("trigger", which)
+    if kind == "hold_combo":
+        for btn in which:
+            gamepad.press_button(button=btn)
+        gamepad.update()
+        return ("combo", tuple(which))
     return None
 
 
@@ -197,9 +213,17 @@ while True:
         continue
 
     # Controles que podem ser segurados (analog / hold_button / hold_trigger).
-    # Se o mesmo controle já está segurado, só renova o cronômetro.
+    # Se o mesmo controle já está segurado:
+    #   - hold_trigger: libera e re-engaja (o jogo precisa ver o gatilho em 0 entre os
+    #     ataques para registrar a soltura do R2)
+    #   - outros: só renova o cronômetro
     if held is not None and held == identity_of(kind, which):
-        last_signal_time = now
+        if kind == "hold_trigger":
+            release_held()
+            time.sleep(0.03)
+            held = engage(kind, which)
+        else:
+            last_signal_time = now
         continue
     # Troca de controle: solta o anterior e ativa o novo.
     release_held()

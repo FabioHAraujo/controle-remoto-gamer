@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lies of Control — Overlay</title>
+    <link rel="stylesheet" href="/assets/overlay.css">
+  </head>
+  <body>
+    <main class="overlay" id="overlay">
+      <div class="energy-line"></div>
+      <section class="input-side">
+        <div class="remote-orb">
+          <span class="signal-wave wave-one"></span>
+          <span class="signal-wave wave-two"></span>
+          <span id="inputGlyph">OK</span>
+        </div>
+        <div class="copy">
+          <small>SINAL INFRAVERMELHO</small>
+          <strong id="inputLabel">OK</strong>
+          <code id="inputCode">0x00000000</code>
+        </div>
+      </section>
+
+      <div class="flow-arrow"><i></i><span>›</span></div>
+
+      <section class="output-side">
+        <div class="output-heading">
+          <small>COMANDO NO JOGO</small>
+          <span id="behavior">CLIQUE</span>
+        </div>
+        <div class="output-chips" id="outputChips"><b>A</b></div>
+      </section>
+      <div class="brand-bug"><i>LC</i><span>LIES OF CONTROL</span></div>
+    </main>
+    <script src="/assets/remote.js"></script>
+    <script src="/assets/overlay.js"></script>
+  </body>
+</html>

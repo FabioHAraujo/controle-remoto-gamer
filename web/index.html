@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090b10">
+    <title>Lies of Control — Studio</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Lies of Control">
+        <span class="brand-mark">LC</span>
+        <span><strong>Lies of Control</strong><small>Remote studio</small></span>
+      </a>
+      <div class="device-statuses">
+        <span class="status-pill" id="gamepadStatus"><i></i> Controle virtual</span>
+        <button class="status-pill" id="serialStatus" type="button"><i></i> Serial desconectada</button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="intro-row">
+        <div>
+          <p class="eyebrow">CONFIGURADOR FBG-8035</p>
+          <h1>Seu controle. Suas regras.</h1>
+          <p class="lede">Registre cada sinal infravermelho, combine ações do Xbox e leve tudo para a live.</p>
+        </div>
+        <nav class="steps" aria-label="Etapas">
+          <button class="step active" data-step-target="1"><span>01</span><b>Calibrar</b></button>
+          <i></i>
+          <button class="step" data-step-target="2"><span>02</span><b>Mapear</b></button>
+          <i></i>
+          <button class="step" data-step-target="3"><span>03</span><b>Transmitir</b></button>
+        </nav>
+      </section>
+
+      <section class="workspace">
+        <article class="remote-stage panel">
+          <div class="stage-head">
+            <div>
+              <p class="section-kicker" id="stageKicker">CONTROLE FÍSICO</p>
+              <h2 id="stageTitle">Escolha uma tecla</h2>
+            </div>
+            <div class="progress-ring" id="progressRing"><span id="progressValue">0%</span></div>
+          </div>
+          <div id="remoteMount" class="remote-mount" aria-label="Representação do controle FBG-8035"></div>
+          <p class="remote-hint" id="remoteHint"><span class="hint-dot"></span> Clique numa tecla do desenho para começar</p>
+        </article>
+
+        <aside class="config-panel panel">
+          <section class="step-panel active" data-step="1">
+            <p class="section-kicker">ETAPA 01</p>
+            <h2>Reconhecer os sinais</h2>
+            <p class="panel-copy">Conecte o Arduino. Depois selecione uma tecla no desenho e aperte a mesma tecla no controle físico.</p>
+
+            <div class="connection-card">
+              <label for="portSelect">Porta do Arduino</label>
+              <div class="connection-row">
+                <select id="portSelect"><option value="COM4">COM4</option></select>
+                <button class="icon-button" id="refreshPorts" type="button" title="Atualizar portas">↻</button>
+              </div>
+              <div class="connection-row secondary">
+                <label class="check"><input type="checkbox" id="autoconnect"> Conectar ao iniciar</label>
+                <button class="button primary compact" id="connectButton" type="button">Conectar</button>
+              </div>
+            </div>
+
+            <div class="capture-card empty" id="captureCard">
+              <span class="capture-icon">⌁</span>
+              <div><small>AGUARDANDO SELEÇÃO</small><strong id="captureTitle">Nenhuma tecla selecionada</strong><code id="captureCode">—</code></div>
+            </div>
+
+            <div class="stats-row">
+              <span><b id="capturedCount">0</b><small>registradas</small></span>
+              <span><b id="remainingCount">0</b><small>restantes</small></span>
+            </div>
+            <button class="button primary wide" id="toMapping" type="button" disabled>Próximo: definir ações <span>→</span></button>
+            <p class="fine-print">Você pode seguir depois de registrar ao menos uma tecla e voltar quando quiser.</p>
+          </section>
+
+          <section class="step-panel" data-step="2">
+            <p class="section-kicker">ETAPA 02</p>
+            <h2>Definir a resposta</h2>
+            <p class="panel-copy">Uma saída cria uma tecla simples. Duas ou mais criam um combo simultâneo.</p>
+
+            <div class="selected-key-card" id="selectedKeyCard">
+              <span id="selectedKeyGlyph">?</span>
+              <div><small>TECLA SELECIONADA</small><strong id="selectedKeyName">Escolha no controle</strong><code id="selectedKeyCode">—</code></div>
+            </div>
+
+            <fieldset class="behavior-field">
+              <legend>Comportamento</legend>
+              <label><input type="radio" name="behavior" value="pulse" checked><span><b>Clique</b><small>aperta e solta</small></span></label>
+              <label><input type="radio" name="behavior" value="hold"><span><b>Segurar</b><small>até soltar no IR</small></span></label>
+            </fieldset>
+
+            <div class="output-heading"><label>Teclas do Xbox</label><span id="comboBadge">AÇÃO SIMPLES</span></div>
+            <div class="output-list" id="outputList"></div>
+
+            <div class="action-row">
+              <button class="button ghost" id="previewMapping" type="button" disabled>Prévia OBS</button>
+              <button class="button primary" id="saveMapping" type="button" disabled>Salvar ação</button>
+            </div>
+            <button class="button subtle wide" id="toOverlay" type="button">Próximo: configurar OBS <span>→</span></button>
+          </section>
+
+          <section class="step-panel" data-step="3">
+            <p class="section-kicker">ETAPA 03</p>
+            <h2>Pronto para a live</h2>
+            <p class="panel-copy">Adicione o endereço abaixo como uma fonte de navegador no OBS. O fundo já é transparente.</p>
+
+            <div class="success-orbit"><div>✓</div></div>
+            <div class="url-box"><small>URL DA FONTE DE NAVEGADOR</small><code id="overlayUrl"></code><button id="copyUrl" type="button">Copiar</button></div>
+            <div class="obs-settings">
+              <span><b>1280 × 720</b><small>Tamanho recomendado</small></span>
+              <span><b>30 FPS</b><small>Taxa suficiente</small></span>
+              <span><b>Transparente</b><small>Sem chroma key</small></span>
+            </div>
+            <button class="button primary wide" id="openOverlay" type="button">Abrir overlay <span>↗</span></button>
+            <button class="button ghost wide" data-step-target="2" type="button">Voltar aos mapeamentos</button>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="/assets/remote.js"></script>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>

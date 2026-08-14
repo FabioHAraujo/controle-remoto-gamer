@@ -112,6 +112,43 @@ pip install pyserial vgamepad
    como `(nao mapeado)` — útil pra descobrir o hex de um botão novo.
 4. Abra o Lies of P e jogue. 🐺
 
+### Interface web de configuração
+
+A interface web permite calibrar os botões do controle físico, associar uma ou
+mais ações do controle Xbox e escolher entre clique e segurar. Ela também serve
+um overlay transparente para fontes de navegador do OBS.
+
+```bash
+python web_server.py
+```
+
+O configurador abre em `http://127.0.0.1:8765`. O fluxo possui três etapas:
+
+1. conecte a porta serial, clique em uma tecla no desenho do FBG-8035 e aperte
+   a tecla correspondente no controle físico;
+2. escolha uma ou mais saídas Xbox (mais de uma saída forma um combo) e defina
+   se a ação é um clique ou deve permanecer segurada;
+3. adicione `http://127.0.0.1:8765/overlay` ao OBS como **Fonte de navegador**,
+   preferencialmente em 1280 × 720.
+
+Os mapeamentos ficam em `controller_config.json`, criado localmente e ignorado
+pelo Git. Ative **Conectar ao iniciar** na interface para o overlay voltar a
+receber comandos automaticamente nas próximas execuções.
+
+### 🎥 Módulo extra de webcam
+
+O projeto agora também inclui um módulo opcional de controle por cabeça:
+
+- `head_tracker.py`: detecta o rosto na webcam e observa movimentos rápidos.
+- `head_control.py`: traduz esses movimentos em um pulso do analógico direito.
+
+Comportamento atual:
+- mover a cabeça rapidamente para a direita → empurra o stick direito para a direita;
+- mover a cabeça rapidamente para a esquerda → empurra o stick direito para a esquerda;
+- mover a cabeça rapidamente para a frente → empurra o stick direito para cima.
+
+Se a webcam não estiver disponível, o módulo simplesmente não emite comandos.
+
 ---
 
 ## ⚙️ Ajustes finos

@@ -22,3 +22,7 @@ dist/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Configuração local criada pela interface web
+controller_config.json
+controller_config.json.tmp

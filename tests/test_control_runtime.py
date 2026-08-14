@@ -98,6 +98,30 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(gamepad.calls, [])
         app.close()
 
+    def test_imports_legacy_actions_by_calibrated_ir_code(self):
+        store = ConfigStore(self.path)
+        store.assign_code("nav-up", "Cima", "0xBF40FB04")
+        store.assign_code("record", "Gravar", "0x42BDFB04")
+
+        result = store.import_legacy_mappings()
+        buttons = store.snapshot()["buttons"]
+
+        self.assertEqual(result["imported"], ["nav-up", "record"])
+        self.assertEqual(buttons["nav-up"]["behavior"], "hold")
+        self.assertEqual(buttons["nav-up"]["outputs"], ["left_stick_up"])
+        self.assertEqual(buttons["record"]["outputs"], ["left_shoulder", "button_y"])
+
+    def test_legacy_import_preserves_mapping_created_in_frontend(self):
+        store = ConfigStore(self.path)
+        store.assign_code("power", "Power", "0xF708FB04")
+        store.set_mapping("power", "Power", "hold", ["button_x"])
+
+        result = store.import_legacy_mappings()
+
+        self.assertEqual(result["imported"], [])
+        self.assertEqual(result["preserved"], ["power"])
+        self.assertEqual(store.snapshot()["buttons"]["power"]["outputs"], ["button_x"])
+
 
 if __name__ == "__main__":
     unittest.main()

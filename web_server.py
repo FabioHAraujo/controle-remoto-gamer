@@ -7,6 +7,7 @@ import json
 import mimetypes
 import queue
 import signal
+import sys
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -28,9 +29,21 @@ class RemoteHTTPServer(ThreadingHTTPServer):
         self.application = application
         super().__init__(address, RemoteRequestHandler)
 
+    def handle_error(self, request, client_address):
+        """Ignora desconexões normais de navegadores e fontes do OBS.
+
+        Chromium/Brave abre conexões especulativas e pode encerrá-las antes de
+        enviar a primeira linha HTTP, o que no Windows gera WinError 10053.
+        """
+        error = sys.exc_info()[1]
+        if isinstance(error, (BrokenPipeError, ConnectionAbortedError, ConnectionResetError)):
+            return
+        super().handle_error(request, client_address)
+
 
 class RemoteRequestHandler(BaseHTTPRequestHandler):
     server_version = "LiesOfControl/1.0"
+    protocol_version = "HTTP/1.1"
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -105,6 +118,11 @@ class RemoteRequestHandler(BaseHTTPRequestHandler):
                 )
                 app.events.publish({"type": "mapping-saved", "buttonId": body["buttonId"]})
                 self._json({"mapping": item})
+                return
+            if path == "/api/import/legacy":
+                result = app.store.import_legacy_mappings()
+                app.events.publish({"type": "legacy-imported", **result})
+                self._json({"result": result, "config": app.store.snapshot()})
                 return
             if path == "/api/settings":
                 timing = {}

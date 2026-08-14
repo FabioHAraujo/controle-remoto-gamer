@@ -175,6 +175,29 @@ async function saveMapping() {
   }
 }
 
+async function importLegacyMappings() {
+  const button = $("#importLegacy");
+  button.disabled = true;
+  button.textContent = "Importando…";
+  try {
+    const payload = await request("/api/import/legacy", { method: "POST", body: "{}" });
+    state.config = payload.config;
+    const { imported, preserved } = payload.result;
+    $("#legacyImportCard").classList.add("done");
+    button.textContent = "Importado";
+    renderState();
+    if (imported.length) {
+      toast(`${imported.length} ações antigas importadas; ${preserved.length} mapeamentos manuais preservados.`);
+    } else {
+      toast("Nada para importar: as ações correspondentes já estavam configuradas.");
+    }
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = "Importar";
+    toast(error.message, "error");
+  }
+}
+
 function setStep(step) {
   state.step = Number(step);
   $$(".step-panel").forEach((panel) => panel.classList.toggle("active", Number(panel.dataset.step) === state.step));
@@ -289,6 +312,7 @@ $("#toMapping").addEventListener("click", () => {
   }
 });
 $("#saveMapping").addEventListener("click", saveMapping);
+$("#importLegacy").addEventListener("click", importLegacyMappings);
 $("#previewMapping").addEventListener("click", async () => {
   try {
     await request("/api/preview", { method: "POST", body: JSON.stringify({ buttonId: state.selectedButtonId }) });
@@ -296,7 +320,7 @@ $("#previewMapping").addEventListener("click", async () => {
   } catch (error) { toast(error.message, "error"); }
 });
 $("#toOverlay").addEventListener("click", () => setStep(3));
-$("#openOverlay").addEventListener("click", () => window.open("/overlay", "lies-overlay"));
+$("#openOverlay").addEventListener("click", () => window.open("/overlay?demo=1", "lies-overlay"));
 $("#copyUrl").addEventListener("click", async () => {
   await navigator.clipboard.writeText(`${location.origin}/overlay`);
   toast("URL do overlay copiada.");

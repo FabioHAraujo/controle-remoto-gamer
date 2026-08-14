@@ -9,9 +9,11 @@ const REMOTE_BUTTONS = [
   { id: "list", label: "Lista", text: "LIST" },
   { id: "number-0", label: "0", text: "0" },
   { id: "qview", label: "Q.View", text: "Q.VIEW" },
-  { id: "volume", label: "Volume", text: "VOL", className: "tall" },
+  { id: "volume-up", label: "Volume +", text: "▲\nVOL", className: "rocker rocker-up" },
+  { id: "volume-down", label: "Volume −", text: "VOL\n▼", className: "rocker rocker-down" },
   { id: "quick-fav", label: "Favoritos", text: "FAV" },
-  { id: "channel", label: "Canal", text: "CH\nPAGE", className: "tall" },
+  { id: "channel-up", label: "Canal +", text: "▲\nCH", className: "rocker rocker-up" },
+  { id: "channel-down", label: "Canal −", text: "CH\n▼", className: "rocker rocker-down" },
   { id: "info", label: "Informações", text: "ⓘ INFO" },
   { id: "mute", label: "Mudo", text: "⌁" },
   { id: "netflix", label: "Netflix", text: "NETFLIX", className: "service netflix" },
@@ -46,7 +48,7 @@ const REMOTE_ROWS = [
   ["number-4", "number-5", "number-6"],
   ["number-7", "number-8", "number-9"],
   ["list", "number-0", "qview"],
-  ["volume", ["quick-fav", "info", "mute"], "channel"],
+  [["volume-up", "volume-down"], ["quick-fav", "info", "mute"], ["channel-up", "channel-down"]],
   ["netflix", "home", "amazon"],
   ["guide", "nav-up", "live-zoom"],
   ["nav-left", "ok", "nav-right"],
@@ -77,7 +79,7 @@ function createRemote(mount, options = {}) {
       }
       if (Array.isArray(entry)) {
         const stack = document.createElement("div");
-        stack.className = "remote-stack";
+        stack.className = `remote-stack ${entry.length === 2 ? "remote-rocker-stack" : ""}`;
         entry.forEach((id) => stack.append(createRemoteButton(REMOTE_LOOKUP[id], options)));
         rowElement.append(stack);
         return;

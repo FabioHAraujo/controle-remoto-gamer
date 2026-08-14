@@ -49,6 +49,30 @@ OUTPUT_CATALOG = [
 OUTPUT_LABELS = {item["id"]: item["label"] for item in OUTPUT_CATALOG}
 VALID_OUTPUTS = set(OUTPUT_LABELS)
 
+# Migração do `code_map` original. As associações são feitas pelo código IR já
+# calibrado no front, portanto independem do nome/posição visual da tecla.
+LEGACY_MAPPINGS = {
+    "0xBF40FB04": {"behavior": "hold", "outputs": ["left_stick_up"]},
+    "0xBE41FB04": {"behavior": "hold", "outputs": ["left_stick_down"]},
+    "0xF807FB04": {"behavior": "hold", "outputs": ["left_stick_left"]},
+    "0xF906FB04": {"behavior": "hold", "outputs": ["left_stick_right"]},
+    "0x50AFFB04": {"behavior": "pulse", "outputs": ["dpad_left"]},
+    "0xA35CFB04": {"behavior": "pulse", "outputs": ["dpad_right"]},
+    "0x54ABFB04": {"behavior": "pulse", "outputs": ["dpad_down"]},
+    "0xA956FB04": {"behavior": "pulse", "outputs": ["dpad_up"]},
+    "0xFD02FB04": {"behavior": "hold", "outputs": ["left_trigger"]},
+    "0xFC03FB04": {"behavior": "hold", "outputs": ["left_shoulder"]},
+    "0xFE01FB04": {"behavior": "pulse", "outputs": ["right_shoulder"]},
+    "0xFF00FB04": {"behavior": "hold", "outputs": ["right_trigger"]},
+    "0xBB44FB04": {"behavior": "pulse", "outputs": ["right_thumb"]},
+    "0xA45BFB04": {"behavior": "pulse", "outputs": ["button_b"]},
+    "0x4EB1FB04": {"behavior": "hold", "outputs": ["button_a"]},
+    "0x837CFB04": {"behavior": "hold", "outputs": ["button_x"]},
+    "0x44BBFB04": {"behavior": "hold", "outputs": ["button_y"]},
+    "0xF708FB04": {"behavior": "pulse", "outputs": ["button_a", "dpad_left"]},
+    "0x42BDFB04": {"behavior": "hold", "outputs": ["left_shoulder", "button_y"]},
+}
+
 DEFAULT_CONFIG = {
     "version": 1,
     "serial": {"port": "COM4", "baudrate": 9600, "autoconnect": False},
@@ -130,6 +154,33 @@ class ConfigStore:
             item.update({"label": label, "behavior": behavior, "outputs": clean_outputs})
             self._save()
             return copy.deepcopy(item)
+
+    def import_legacy_mappings(self):
+        """Importa ações antigas para teclas calibradas ainda sem saída.
+
+        Mapeamentos feitos pelo usuário no front sempre vencem: uma tecla com
+        `outputs` preenchido é contabilizada como preservada e não é alterada.
+        """
+        imported = []
+        preserved = []
+        with self._lock:
+            for button_id, item in self._data["buttons"].items():
+                legacy = LEGACY_MAPPINGS.get(normalize_code(item.get("code", "")))
+                if not legacy:
+                    continue
+                if item.get("outputs"):
+                    preserved.append(button_id)
+                    continue
+                item.update(copy.deepcopy(legacy))
+                imported.append(button_id)
+            if imported:
+                self._save()
+            return {
+                "imported": imported,
+                "preserved": preserved,
+                "matched": len(imported) + len(preserved),
+                "available": len(LEGACY_MAPPINGS),
+            }
 
     def _save(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)

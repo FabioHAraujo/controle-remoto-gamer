@@ -131,9 +131,18 @@ O configurador abre em `http://127.0.0.1:8765`. O fluxo possui três etapas:
 3. adicione `http://127.0.0.1:8765/overlay` ao OBS como **Fonte de navegador**,
    preferencialmente em 1280 × 720.
 
+Na segunda etapa, **Usar as ações do código antigo** cruza os códigos IR já
+calibrados com o `code_map` original e importa os comandos correspondentes.
+Ações configuradas manualmente pela interface são sempre preservadas.
+
 Os mapeamentos ficam em `controller_config.json`, criado localmente e ignorado
 pelo Git. Ative **Conectar ao iniciar** na interface para o overlay voltar a
 receber comandos automaticamente nas próximas execuções.
+
+O endereço `/overlay` é transparente e permanece vazio enquanto nenhuma tecla
+mapeada está ativa; em um navegador comum essa transparência costuma aparecer
+branca. Para conferir o visual sem hardware, abra `/overlay?demo=1`. No OBS,
+continue usando a URL sem `?demo=1`.
 
 ### 🎥 Módulo extra de webcam
 
